@@ -26,6 +26,28 @@ d_log<-d_log%>%
   mutate(mass=`mass(g)`, 
          weaning=`weaning(mo)`, 
          gestation)
-m1<-lm(data=d_log, mass~`gestation(mo)`+`weaning(mo)`+`AFR(mo)`+`max. life(mo)`+`newborn(g)`+`wean mass(g)`, na.action=na.exclude)
+m_gest<-lm(data=d_log, mass~`gestation(mo)`, na.action = na.exclude)# not padding NAs
+relGest<-resid(m_gest)
+m_w<-lm(data=d_log, mass~`weaning(mo)`, na.action=na.exclude)
+relWean<-resid(m_w)
+m_AFR<-lm(data=d_log, mass~`AFR(mo)`, na.action=na.exclude)
+relAFR<-resid(m_AFR)
+m_life<-lm(data=d_log, mass~`max. life(mo)`, na.action=na.exclude)
+relLife<-resid(m_life)
+m_new<-lm(data=d_log, mass~`newborn(g)`, na.action=na.exclude)
+relNewbornMass<-resid(m_new)
+m_w_m<-lm(data=d_log, mass~`wean mass(g)`, na.action=na.exclude)
+relWeaningMass<-resid(m_w_m)
+
+d_log<-d_log%>%
+  mutate(relGest=relGest, 
+        relWean=relWean,
+        relAFR=relAFR,
+        relLife=relLife,
+        relNewbornMass=relNewbornMass,
+        relWeaningMass=relWeaningMass )
+
 summary(m1)
+
+
 ```
