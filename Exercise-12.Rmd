@@ -77,14 +77,20 @@ What variables, if any, appear in all of this set of “top” models?
 Calculate and plot the model-averaged coefficients and their CIs across this set of top models.
 
 ```{r}
+
+library(MASS)
 D_log<-d_log%>%
   drop_na(`gestation(mo)`,`max. life(mo)`, `AFR(mo)`, `newborn(g)`, `weaning(mo)`, `wean mass(g)`, `litters/year`, mass)
 
 life_1<-lm(data=D_log, `max. life(mo)`~ `gestation(mo)`+ `newborn(g)`+`weaning(mo)`+`wean mass(g)`+`litters/year`, mass, na.action = na.omit)
 summary(life_1) #all sig so do we drop anythign>????????????????????????????????? 
 
+(s <- stepAIC(life_1, scope = . ~ ., direction = "both")) #full model has best AIC
+summary(s)
 AFR_1<-lm(data=D_log, `AFR(mo)`~ `gestation(mo)`+ `newborn(g)`+`weaning(mo)`+`wean mass(g)`+`litters/year`, mass)
 summary(AFR_1) #same note as above lol
+(step <- stepAIC(AFR_1, scope = . ~ ., direction = "both")) #full model has best AIC
+summary(step)
 ```
 
 
