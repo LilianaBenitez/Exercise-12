@@ -8,11 +8,12 @@ output: html_document
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(naniar)
+library(conflicted)
 f<-"https://raw.githubusercontent.com/difiore/ada-2024-datasets/main/Mammal_lifehistories_v2.txt"
 d<-read_tsv(f)
 replace_with_na_all(d,   condition = ~.x == -999)
 d<-d%>%
-  select(-`litter size`, refs)
+  dplyr::select(-refs, -`litter size`)
 
 d_log<-d%>%
   mutate(across(where(is.numeric), log))
@@ -22,21 +23,18 @@ d_log<-d%>%
 ## Regression: 
 Regress the (now log transformed) age [gestation(mo), weaning(mo), AFR(mo) (age at first reproduction), and max. life(mo) (maximum lifespan)] and mass [newborn(g) and wean mass(g)] variables on (now log transformed) overall body mass(g) and add the residuals to the dataframe as new variables (relGest, relWean, relAFR, relLife, relNewbornMass, and relWeaningMass).
 ```{r}
-d_log<-d_log%>%
-  mutate(mass=`mass(g)`, 
-         weaning=`weaning(mo)`, 
-         gestation)
-m_gest<-lm(data=d_log, mass~`gestation(mo)`, na.action = na.exclude)# not padding NAs
+
+m_gest<-lm(data=d_log, `mass(g)`~`gestation(mo)`, na.action = na.exclude)# not padding NAs
 relGest<-resid(m_gest)
-m_w<-lm(data=d_log, mass~`weaning(mo)`, na.action=na.exclude)
+m_w<-lm(data=d_log, `mass(g)`~`weaning(mo)`, na.action=na.exclude)
 relWean<-resid(m_w)
-m_AFR<-lm(data=d_log, mass~`AFR(mo)`, na.action=na.exclude)
+m_AFR<-lm(data=d_log,  `mass(g)`~`AFR(mo)`, na.action=na.exclude)
 relAFR<-resid(m_AFR)
-m_life<-lm(data=d_log, mass~`max. life(mo)`, na.action=na.exclude)
+m_life<-lm(data=d_log,  `mass(g)`~`max. life(mo)`, na.action=na.exclude)
 relLife<-resid(m_life)
-m_new<-lm(data=d_log, mass~`newborn(g)`, na.action=na.exclude)
+m_new<-lm(data=d_log,  `mass(g)`~`newborn(g)`, na.action=na.exclude)
 relNewbornMass<-resid(m_new)
-m_w_m<-lm(data=d_log, mass~`wean mass(g)`, na.action=na.exclude)
+m_w_m<-lm(data=d_log,  `mass(g)`~`wean mass(g)`, na.action=na.exclude)
 relWeaningMass<-resid(m_w_m)
 
 d_log<-d_log%>%
@@ -79,18 +77,32 @@ Calculate and plot the model-averaged coefficients and their CIs across this set
 ```{r}
 
 library(MASS)
+library(AICcmodavg)
+library(MuMIn)
 D_log<-d_log%>%
-  drop_na(`gestation(mo)`,`max. life(mo)`, `AFR(mo)`, `newborn(g)`, `weaning(mo)`, `wean mass(g)`, `litters/year`, mass)
+  drop_na(`gestation(mo)`,`max. life(mo)`, `AFR(mo)`, `newborn(g)`, `weaning(mo)`, `wean mass(g)`, `litters/year`, `mass(g)`)
 
-life_1<-lm(data=D_log, `max. life(mo)`~ `gestation(mo)`+ `newborn(g)`+`weaning(mo)`+`wean mass(g)`+`litters/year`, mass, na.action = na.omit)
+life_1<-lm(data=D_log, `max. life(mo)`~ `gestation(mo)`+ `newborn(g)`+`weaning(mo)`+`wean mass(g)`+`litters/year`,  `mass(g)`,  na.action=na.fail)
 summary(life_1) #all sig so do we drop anythign>????????????????????????????????? 
 
 (s <- stepAIC(life_1, scope = . ~ ., direction = "both")) #full model has best AIC
 summary(s)
-AFR_1<-lm(data=D_log, `AFR(mo)`~ `gestation(mo)`+ `newborn(g)`+`weaning(mo)`+`wean mass(g)`+`litters/year`, mass)
+
+mods <- dredge(life_1, beta = "none", m.lim = c(0, 4))
+
+(mods.list <- get.models(mods, subset = TRUE))
+
+coef(mods)
+
+#(mods.avg <- summary(model.avg(mods, subset = delta < 4, fit = TRUE))) error message: Error in model.avg.default(object = get.models(object = mods, subset = delta <  :  only one model supplied. Nothing to do
+
+AFR_1<-lm(data=D_log, `AFR(mo)`~ `gestation(mo)`+ `newborn(g)`+`weaning(mo)`+`wean mass(g)`+`litters/year`,  `mass(g)`)
 summary(AFR_1) #same note as above lol
 (step <- stepAIC(AFR_1, scope = . ~ ., direction = "both")) #full model has best AIC
 summary(step)
+
+
 ```
+
 
 
