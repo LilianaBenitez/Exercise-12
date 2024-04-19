@@ -1,0 +1,31 @@
+---
+title: "Exercise 12"
+author: "Lili Benitez"
+date: "2024-04-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(naniar)
+f<-"https://raw.githubusercontent.com/difiore/ada-2024-datasets/main/Mammal_lifehistories_v2.txt"
+d<-read_tsv(f)
+replace_with_na_all(d,   condition = ~.x == -999)
+d<-d%>%
+  select(-`litter size`, refs)
+
+d_log<-d%>%
+  mutate(across(where(is.numeric), log))
+
+```
+
+## Regression: 
+Regress the (now log transformed) age [gestation(mo), weaning(mo), AFR(mo) (age at first reproduction), and max. life(mo) (maximum lifespan)] and mass [newborn(g) and wean mass(g)] variables on (now log transformed) overall body mass(g) and add the residuals to the dataframe as new variables (relGest, relWean, relAFR, relLife, relNewbornMass, and relWeaningMass).
+```{r}
+d_log<-d_log%>%
+  mutate(mass=`mass(g)`, 
+         weaning=`weaning(mo)`, 
+         gestation)
+m1<-lm(data=d_log, mass~`gestation(mo)`+`weaning(mo)`+`AFR(mo)`+`max. life(mo)`+`newborn(g)`+`wean mass(g)`, na.action=na.exclude)
+summary(m1)
+```
