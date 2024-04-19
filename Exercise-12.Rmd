@@ -47,7 +47,37 @@ d_log<-d_log%>%
         relNewbornMass=relNewbornMass,
         relWeaningMass=relWeaningMass )
 
-summary(m1)
+```
 
+## Step 5
+Plot residuals of max lifespan (relLife) in relation to Order. Which mammalian orders have the highest residual lifespan?
+Plot residuals of newborn mass (relNewbornMass) in relation to Order. Which mammalian orders have the have highest residual newborn mass?
+Plot residuals of weaning mass (relWeaningMass) in relation to Order. Which mammalian orders have the have highest relative weaning mass?
+```{r}
+ggplot(data=d_log, aes(x=order, y=relLife))+
+  geom_boxplot()+
+   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+ggplot(data=d_log, aes(x=order, y=relNewbornMass))+
+  geom_boxplot()+
+   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+ggplot(data=d_log, aes(x=order, y=relWeaningMass))+
+  geom_boxplot()+
+   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 ```
+Cetacea, Atiodactyla, Sirenia, and Perissodactyla, Proboscidea, have the highest residual life spans. Carnivora, Lagomorpha, Perissodactyla, Proboscidea, Tubulindentata have the highest residual newborn mass, although the latter seem to be data deficient. Sirenia, Tubulidentat, Xenarthra, Hyracooidea(these four data defic), Pholidota,Lagomorpha, Carnivora (very variable), have the highest relative weaning mass. 
+## Step 6
+Run models and a model selection process to evaluate what (now log transformed) variables best predict each of the two response variables, max. life(mo) and AFR(mo), from the set of the following predictors: gestation(mo), newborn(g), weaning(mo), wean mass(g), litters/year, and overall body mass(g).
+HINT: Before running models, winnow your dataset to drop rows that are missing the respective response variable or any of the predictors, e.g., by using drop_na().
+
+For each of the two response variables, indicate what is the best model overall based on AICc and how many models have a delta AICc of 4 or less?
+What variables, if any, appear in all of this set of “top” models?
+Calculate and plot the model-averaged coefficients and their CIs across this set of top models.
+
+```{r}
+
+```
+
+
